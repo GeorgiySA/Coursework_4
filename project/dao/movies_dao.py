@@ -11,3 +11,6 @@ class MovieDao:
 
     def get_one(self, mid):
         return self.session.query(Movie).get(mid)
+
+    def get_all_sorted(self):
+        return self.session.query(Movie).order_by(Movie.year)
