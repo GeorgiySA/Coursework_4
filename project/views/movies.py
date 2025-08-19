@@ -25,7 +25,7 @@ class MovieView(Resource):
                                     year_args, status, page)), 200
 
 
-@movie_ns.route("/<int:mid")
+@movie_ns.route("/<int:mid>")
 class MovieView(Resource):
     @auth_required
     def get(self, mid):

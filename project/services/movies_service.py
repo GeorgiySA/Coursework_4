@@ -8,8 +8,8 @@ class MovieService:
     def get_all(self, genres_args=None, director_args=None, year_args=None,
                 status=None, page=None):
         if genres_args and director_args:
-            movies = list(set(self.dao.get_by_genre(genres_args)) &
-                          set((self.dao.get_by_director(director_args)))
+            movies = list(set(self.dao.get_by_director(director_args)) &
+                          set(self.dao.get_by_genre(genres_args)))
         elif genres_args:
             movies = self.dao.get_by_genre(genres_args)
         elif director_args:
