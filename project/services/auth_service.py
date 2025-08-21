@@ -22,7 +22,7 @@ class AuthService:
 
         if not is_refresh and not self.user_service.compare_password(user.password,
                                                                      password):
-                raise ValueError("Invalid password")
+            raise ValueError("Invalid password")
 
         data = {
             "email": user.email

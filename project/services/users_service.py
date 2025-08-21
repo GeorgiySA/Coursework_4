@@ -1,9 +1,11 @@
 import base64
 import hashlib
 import hmac
+from typing import Dict, Any, Optional, List
 
 
 from project.dao.users_dao import UserDao
+from project.dao.model.user_model import User
 from constants import PWD_HASH_SALT, PWD_HASH_ITERATIONS
 
 
@@ -11,17 +13,19 @@ class UserService:
     def __init__(self, dao: UserDao):
         self.dao = dao
 
-    def get_all(self):
+    def get_all(self) -> List[User]:
         return self.dao.get_all()
 
-    def get_one(self, uid):
+    def get_one(self, uid: int) -> Optional[User]:
         return self.dao.get_one(uid)
 
-    def create(self, data):
+    def create(self, data: Dict[str, Any]) -> User:
+        """ Создает нового пользователя с хэшированным паролем. """
         data["password"] = self.get_hash(data["password"])
         return self.dao.create(data)
 
-    def update(self, data):
+    def update(self, data: Dict[str, Any]) -> Optional[User]:
+        """ Полное обновление пользователя. """
         uid = data["id"]
         user = self.get_one(uid)
 
@@ -33,16 +37,16 @@ class UserService:
 
         return self.dao.update(user)
 
-    def update_partial(self, data, uid):
+    def update_partial(self, data: Dict[str, Any], uid: int) -> Optional[User]:
+        """ Частичное обновление пользователя. """
         user = self.get_one(uid)
         print(user.password)
-        if "password_1" and "password_2" in data:
+        if "password_1" in data and "password_2" in data:
             if self.get_hash(data["password_1"]) == user.password:
                 user.password = self.get_hash(data["password_2"])
         if "email" in data:
             user.email = data["email"]
         if "password" in data:
-            user.password = data["password"]
             user.password = self.get_hash(data["password"])
         if "name" in data:
             user.name = data["name"]
@@ -53,10 +57,11 @@ class UserService:
 
         return self.dao.update(user)
 
-    def delete(self, uid):
+    def delete(self, uid: int) -> bool:
         return self.dao.delete(uid)
 
     def get_hash(self, password):
+        """ Хэширует пароль с использованием PBKDF2 """
         hash_digest = hashlib.pbkdf2_hmac(
             'sha256',
             password.encode('utf-8'),
@@ -65,17 +70,17 @@ class UserService:
         )
         return base64.b64encode(hash_digest)
 
-    def get_by_email(self, email):
+    def get_by_email(self, email: str) -> Optional[User]:
         return self.dao.get_by_email(email)
 
-    def compare_password(self, password_hash, other_password):
-        decoded_digest = base64.b64decode(password_hash)
+    def compare_password(self, password_hash: str, other_password: str) -> bool:
+        decoded_digest = base64.b64decode(password_hash.encode('utf-8'))
 
         hash_digest = hashlib.pbkdf2_hmac(
             'sha256',
             other_password.encode('utf-8'),
             PWD_HASH_SALT,
             PWD_HASH_ITERATIONS
-    )
+        )
 
         return hmac.compare_digest(decoded_digest, hash_digest)
