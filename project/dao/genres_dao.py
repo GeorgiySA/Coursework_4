@@ -1,5 +1,4 @@
 from typing import List, Optional
-
 from project.dao.model.genre_model import Genre
 
 
@@ -24,8 +23,12 @@ class GenreDao:
     def update(self, genre: Genre) -> Genre:
         self.session.add(genre)
         self.session.commit()
+        return genre
 
     def delete(self, gid: int) -> bool:
-        self.session.delete(self.session.query(Genre).get(gid))
-        self.session.commit()
-        return True
+        genre = self.session.query(Genre).get(gid)
+        if genre:
+            self.session.delete(genre)
+            self.session.commit()
+            return True
+        return False

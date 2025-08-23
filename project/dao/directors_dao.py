@@ -1,5 +1,4 @@
 from typing import List, Optional
-
 from project.dao.model.director_model import Director
 
 
@@ -24,9 +23,13 @@ class DirectorDao:
     def update(self, director: Director) -> Director:
         self.session.add(director)
         self.session.commit()
+        return director
 
     def delete(self, did: int) -> bool:
-        self.session.delete(self.session.query(Director).get(did))
-        self.session.commit()
-        return True
+        director = self.session.query(Director).get(did)
+        if director:
+            self.session.delete(director)
+            self.session.commit()
+            return True
+        return False
     

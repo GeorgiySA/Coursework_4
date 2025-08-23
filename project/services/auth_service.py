@@ -1,4 +1,3 @@
-from flask import abort
 from datetime import datetime, timedelta
 import jwt
 import calendar
@@ -13,8 +12,10 @@ class AuthService:
         self.user_service = user_service
 
     def generate_token(self, email, password, is_refresh=False):
-        if not email or not password:
-            raise ValueError("Email and password are required")
+        if not email:
+            raise ValueError("Email is required")
+        if not is_refresh or not password:
+            raise ValueError("Password is required for non-refresh tokens")
 
         user = self.user_service.get_by_email(email)
         if user is None:
@@ -25,16 +26,20 @@ class AuthService:
             raise ValueError("Invalid password")
 
         data = {
-            "email": user.email
+            "email": user.email,
+            "id": user.id
         }
 
+        # Access token - 30 минут
         min30 = datetime.utcnow() + timedelta(minutes=30)
         data["exp"] = calendar.timegm(min30.timetuple())
         access_token = jwt.encode(data, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
+        # Refresh token - 130 дней
         day130 = datetime.utcnow() + timedelta(days=130)
-        data["exp"] = calendar.timegm(day130.timetuple())
-        refresh_token = jwt.encode(data, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        refresh_data = data.copy()
+        refresh_data["exp"] = calendar.timegm(day130.timetuple())
+        refresh_token = jwt.encode(refresh_data, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
         return {
             "access_token": access_token,
@@ -43,7 +48,7 @@ class AuthService:
 
     def approve_refresh_token(self, refresh_token):
         try:
-            # Принудительное преобразование в строку
+            # Принудительное преобразование в строку (нормализация токена)
             if isinstance(refresh_token, bytes):
                 refresh_token = refresh_token.decode('utf-8')
             elif not isinstance(refresh_token, str):
@@ -52,12 +57,16 @@ class AuthService:
             # Удаление возможных кавычек и пробелов
             refresh_token = refresh_token.strip().strip('"').strip("'")
 
+            # Декодирование токена
             data = jwt.decode(refresh_token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
 
             email = data.get("email")
             if not email:
                 raise ValueError("Email not found in token")
+
+            # Генерация новых токенов
             return self.generate_token(email, None, is_refresh=True)
+
         except jwt.ExpiredSignatureError:
             raise ValueError("Refresh token expired")
         except jwt.InvalidTokenError as e:

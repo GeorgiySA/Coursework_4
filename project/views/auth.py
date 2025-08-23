@@ -11,7 +11,7 @@ auth_ns = Namespace("auth")
 class AuthViews(Resource):
     def post(self):
         data = request.json
-        if None in [data.get("email", None), data.get("password", None)]:
+        if not data or None in [data.get("email"), data.get("password")]:
             return {"error": "Email and password are required"}, 400
         try:
             tokens = auth_service.generate_token(data.get("email"), data.get("password"))
@@ -21,6 +21,9 @@ class AuthViews(Resource):
 
     def put(self):
         data = request.json
+        if not data:
+            return {"error": "No JSON data provided"}, 400
+
         refresh_token = data.get("refresh_token")
 
         # # Отладочная информация
@@ -33,20 +36,24 @@ class AuthViews(Resource):
             return {"error": "Only refresh token should be provided"}, 400
 
         try:
-            tokens = auth_service.approve_refresh_token(data.get(refresh_token))
+            tokens = auth_service.approve_refresh_token(refresh_token)
             return tokens, 201
         except Exception as e:
             return {"error": str(e)}, 401
 
-@auth_ns.route("/register")
-class AuthViews(Resource):
+@auth_ns.route("/register/")
+class RegisterViews(Resource):
     def post(self):
-        req_data = request.json
-        if not req_data.get("email") or not req_data.get("password"):
+        req_json = request.json
+        if not req_json:
+            return {"error": "No JSON data provided"}, 400
+        if not req_json.get("email") or not req_json.get("password"):
             return {"error": "Email and password are required"}, 400
 
         try:
-            user_service.create(req_data)
-            return "", 201
-        except Exception as e:
+            user = user_service.create(req_json)
+            return {"message": "User created successfully", "id": user.id}, 201
+        except ValueError as e:
             return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": f"Registration error: {str(e)}"}, 400

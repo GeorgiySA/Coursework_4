@@ -30,5 +30,6 @@ class DirectorService:
     #
     #     return self.dao.update(director)
 
-    # def delete(self, did):
+    # def delete(self, did: int) -> bool:
     #     self.dao.delete(did)
+    #     return True
