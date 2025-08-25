@@ -2,7 +2,7 @@ from flask import Flask, render_template
 from flask_cors import CORS
 from flask_restx import Api
 
-from config import Config
+from config import Config, TestConfig
 from setup_db import db
 from project.dao.model.genre_model import Genre
 from project.dao.model.director_model import Director
@@ -20,10 +20,11 @@ def create_app(config: Config) -> Flask:
     app = Flask(__name__, template_folder='templates')
     app.config.from_object(config)
     app.app_context().push()
+
+    configure_app(app)
     @app.route("/")
     def index():
         return render_template("index.html")
-    configure_app(app)
 
     return app
 
@@ -60,4 +61,4 @@ def load_data(app, db):
 if __name__ == "__main__":
     app = create_app(Config)
     CORS(app)
-    app.run(debug=True)
+    app.run(debug=app.config.get('DEBUG', True))
