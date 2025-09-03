@@ -1,0 +1,23 @@
+# Environment variables
+.env
+
+# Database
+instance/*.db
+
+# Python
+__pycache__/
+
+# Virtual environments
+venv/
+
+# IDE
+.idea/
+.vscode/
+
+
+.*_cache/
+.coverage
+/tests/views/
+*.pyc,
+
+

@@ -1,6 +1,7 @@
 import pytest
 import sys
 import os
+
 from config import TestConfig
 from run import create_app
 
@@ -21,4 +22,5 @@ def app():
 
 @pytest.fixture
 def client(app):
+    """ Создание тестового клиента. """
     return app.test_client()

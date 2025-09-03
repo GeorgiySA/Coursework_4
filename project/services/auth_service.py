@@ -1,8 +1,15 @@
 from datetime import datetime, timedelta
 import jwt
 import calendar
+import os
+from dotenv import load_dotenv
 
-from constants import JWT_ALGORITHM, JWT_SECRET
+# from config import JWT_ALGORITHM, JWT_SECRET
+
+load_dotenv() # Загружает данные из .env файла
+
+JWT_SECRET = os.getenv('JWT_SECRET')
+JWT_ALGORITHM = os.getenv('JWT_ALGORITHM')
 
 
 class AuthService:

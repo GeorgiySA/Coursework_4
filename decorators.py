@@ -1,8 +1,13 @@
 import jwt
 from flask import request, abort
+import os
+from dotenv import load_dotenv
 
 
-from constants import JWT_ALGORITHM, JWT_SECRET
+load_dotenv() # Загружает данные из .env файла
+
+JWT_SECRET = os.getenv('JWT_SECRET')
+JWT_ALGORITHM = os.getenv('JWT_ALGORITHM')
 
 def auth_required(func):
     """ Проверяет JWT в заголовке Authorization реквеста. """
