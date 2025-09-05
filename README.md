@@ -4,8 +4,6 @@
 - Установка зависимостей
 ```shell
 pip install -r requirements.txt
-
-pip install -r requirements.dev.txt
 ```
 
 - Создание моделей (очистит БД и создаст все модели, указанные в импорте)
